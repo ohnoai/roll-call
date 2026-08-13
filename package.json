@@ -1,0 +1,32 @@
+{
+  "name": "roll-call",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "description": "Assign OpenCode Zen/Go models to agent roles and generate opencode.json agent blocks. Human UI + zero-dep CLI.",
+  "bin": {
+    "roll-call": "./cli.mjs"
+  },
+  "scripts": {
+    "start": "npx --yes serve .",
+    "cli": "node cli.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ohnoai/roll-call.git"
+  },
+  "homepage": "https://ohnoai.xyz/tools/roll-call/",
+  "bugs": {
+    "url": "https://github.com/ohnoai/roll-call/issues"
+  },
+  "keywords": [
+    "opencode",
+    "agents",
+    "cli",
+    "ohnoai"
+  ]
+}

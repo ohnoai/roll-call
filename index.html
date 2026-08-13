@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roll Call - ohnoai.xyz</title>
+<meta name="description" content="Assign OpenCode Zen/Go models to agent roles and generate the opencode.json block. First public tool. Filed under Form 7-B.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface-raised: #1c2129;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text-muted: #8b949e;
+  --accent: #58a6ff;
+  --accent-hover: #79c0ff;
+  --danger: #f85149;
+  --danger-hover: #ff6a62;
+  --success: #3fb950;
+  --zen: #58a6ff;
+  --gobg: #d2a8ff;
+  --radius: 6px;
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --mono: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.header .titlewrap { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+
+.header h1 { font-size: 18px; font-weight: 600; }
+
+.header .header-right {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.55rem 1rem;
+}
+
+.header .brand-flair {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  background: linear-gradient(110deg, #ff006e, #ffbe0b, #39ff14, #8338ec);
+  background-size: 240% 240%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 6px rgba(255, 0, 110, 0.45));
+  animation: brand-scream 5s ease infinite;
+}
+
+.header .brand-flair:hover {
+  filter: drop-shadow(0 0 10px rgba(57, 255, 20, 0.55));
+}
+
+@keyframes brand-scream {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.header .site-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.85rem;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.header .site-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  border-bottom: 1px dashed transparent;
+}
+
+.header .site-links a:hover {
+  color: var(--accent);
+}
+
+.header .site-links a[aria-current="page"] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.header .badge {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--surface-raised);
+  padding: 3px 8px;
+  border-radius: 12px;
+}
+
+.main {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.panel {
+  padding: 20px 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.editor-panel { border-right: 1px solid var(--border); }
+.preview-panel { background: var(--surface); }
+
+.section-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.role-list { display: flex; flex-direction: column; gap: 12px; }
+
+.role-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.role-card.default {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.role-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.role-header input[type="text"] {
+  flex: 1;
+  min-width: 120px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.role-header input[type="text"]:focus { outline: none; border-color: var(--accent); }
+.role-header input[type="text"].invalid { border-color: var(--danger); }
+
+.role-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.role-row label { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+
+select, input[type="range"] {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 5px 8px;
+  border-radius: var(--radius);
+  font-size: 12px;
+}
+select:focus, input[type="range"]:focus { outline: none; border-color: var(--accent); }
+
+.model-search-wrap { position: relative; flex: 1; min-width: 180px; }
+.model-search-wrap input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 5px 10px;
+  border-radius: var(--radius);
+  font-size: 12px;
+}
+.model-search-wrap input:focus { outline: none; border-color: var(--accent); }
+
+.model-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 100;
+  display: none;
+}
+.model-dropdown.open { display: block; }
+
+.model-dropdown .group-label {
+  padding: 4px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  background: var(--surface);
+  position: sticky;
+  top: 0;
+}
+
+.model-dropdown .option {
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: var(--mono);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.model-dropdown .option:hover { background: var(--accent); color: #fff; }
+.model-dropdown .option .tag {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.tag-zen { background: var(--zen); color: #000; }
+.tag-go { background: var(--gobg); color: #000; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  background: var(--surface-raised);
+  color: var(--text);
+  font-family: var(--font);
+  white-space: nowrap;
+}
+.btn:hover { background: var(--border); }
+.btn-accent { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-accent:hover { background: var(--accent-hover); }
+.btn-danger { color: var(--danger); border-color: var(--danger); }
+.btn-danger:hover { background: var(--danger); color: #fff; }
+.btn-sm { padding: 2px 8px; font-size: 11px; }
+
+.inline-warn { font-size: 11px; color: var(--danger); }
+
+.temp-val {
+  font-size: 11px;
+  color: var(--text-muted);
+  min-width: 28px;
+  text-align: right;
+  font-family: var(--mono);
+}
+
+.perm-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 10px;
+  margin-top: 2px;
+  border-top: 1px dashed var(--border);
+}
+
+.perm-section { display: flex; flex-direction: column; gap: 6px; }
+.perm-section > label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+}
+
+.perm-section textarea {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  font-family: var(--mono);
+  font-size: 12px;
+  resize: vertical;
+  min-height: 60px;
+}
+.perm-section textarea:focus { outline: none; border-color: var(--accent); }
+
+.perm-task-row, .perm-bash-row { display: flex; align-items: center; gap: 8px; }
+.perm-task-name { flex: 1; font-family: var(--mono); font-size: 12px; color: var(--text); }
+
+.perm-bash-row input[type="text"] {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 5px 10px;
+  border-radius: var(--radius);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.perm-bash-row input[type="text"]:focus { outline: none; border-color: var(--accent); }
+
+.perm-empty { font-size: 11px; color: var(--text-muted); font-style: italic; }
+
+.radio-label { display: flex; align-items: center; gap: 4px; font-size: 12px; cursor: pointer; }
+.radio-label input { accent-color: var(--accent); }
+
+.json-preview {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-x: auto;
+  flex: 1;
+  color: var(--text);
+}
+
+.preview-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.preview-stats { font-size: 11px; color: var(--text-muted); font-family: var(--mono); }
+
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 10px 24px;
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--surface);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 860px) {
+  .main { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+  .preview-panel { max-height: 50vh; }
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="titlewrap">
+    <h1>Roll Call</h1>
+    <span class="badge">opencode.json generator, for your filthy human hands</span>
+  </div>
+  <div class="header-right">
+    <a class="brand-flair" href="https://ohnoai.xyz/" title="back to the regrettable homepage">OHNOAI.XYZ</a>
+    <nav class="site-links" aria-label="site">
+      <a href="https://ohnoai.xyz/">home</a>
+      <a href="https://ohnoai.xyz/blog/">brain spam</a>
+      <a href="https://ohnoai.xyz/tools/" aria-current="page">tools</a>
+    </nav>
+  </div>
+</header>
+
+<div class="main">
+
+  <div class="panel editor-panel" id="editorPanel">
+    <div><span class="section-title">Roles</span></div>
+    <div class="role-list" id="roleList"></div>
+    <button class="btn" onclick="addRole()">+ Add Role</button>
+  </div>
+
+  <div class="panel preview-panel">
+    <span class="section-title">JSON Preview</span>
+    <div class="preview-actions">
+      <button class="btn btn-accent" onclick="copyJSON()">Copy to Clipboard</button>
+      <span class="preview-stats" id="previewStats"></span>
+    </div>
+    <div class="json-preview" id="jsonPreview"></div>
+  </div>
+
+</div>
+
+<footer class="footer">
+  <span id="catalogNotice">Loading live model catalog from opencode.ai&hellip;</span>
+  <span>
+    <span id="roleCount">0</span> role(s) · Form 7-B compliant (allegedly) ·
+    <a href="https://ohnoai.xyz/tools/" style="color: inherit;">all tools</a> ·
+    <a href="agent.md" style="color: inherit;">machine edition</a> ·
+    co-morbid with <a href="https://ohnoai.dev" rel="noopener noreferrer" style="color: inherit;">ohnoai.dev</a>
+    · <a href="https://ohnoai.xyz/spectrum/" style="color: inherit;" title="Clean + Unhinged zip">Spectrum</a>: pay the boring tax · free site stays free forever
+  </span>
+</footer>
+
+<script>
+function slugify(name) {
+  return name
+    .replace(/\s*\([^)]*\)\s*/g, '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9.-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+
+// Fallback list only - used when the live fetch fails for a given provider.
+// Real catalogs come from opencode.ai's own APIs, via same-origin proxy
+// functions (opencode.ai doesn't send CORS headers, so the browser can't
+// fetch these directly - see api/models/zen.js and api/models/go.js):
+//   Zen: /api/models/zen  ->  https://opencode.ai/zen/v1/models
+//   Go:  /api/models/go   ->  https://opencode.ai/zen/go/v1/models
+const FALLBACK_ZEN_NAMES = [
+  "Ling-3.0-flash Free","Laguna S 2.1 Free","North Mini Code Free","Nemotron 3 Ultra Free",
+  "DeepSeek V4 Flash Free","MiMo V2.5 Free","Big Pickle","Gemini 3.5 Flash Lite","Gemini 3.6 Flash",
+  "GPT-5.6 Luna","GPT-5.6 Sol","GPT-5.6 Terra","Grok 4.5","Claude Sonnet 5","GLM-5.2","Kimi K2.7 Code",
+  "Claude Fable 5","MiniMax-M3","Claude Opus 4.8","Grok Build 0.1","Gemini 3.5 Flash","DeepSeek V4 Flash",
+  "DeepSeek V4 Pro","GPT-5.5 Pro","GPT-5.5","Kimi K2.6","Claude Opus 4.7","GLM-5.1","Qwen3.6 Plus",
+  "MiniMax-M2.7","GPT-5.4 Mini","GPT-5.4","GPT-5.4 Pro","GPT-5.3 Codex","Gemini 3.1 Pro Preview",
+  "Claude Sonnet 4.6","Qwen3.5 Plus","GPT-5.3 Codex Spark","MiniMax-M2.5","GLM-5","Claude Opus 4.6",
+  "Kimi K2.5","GPT-5.2 Codex","Gemini 3 Flash","GPT-5.2","Claude Opus 4.5","GPT-5.1","GPT-5.1 Codex",
+  "GPT-5.1 Codex Max","GPT-5.1 Codex Mini","Claude Haiku 4.5","Claude Sonnet 4.5","GPT-5 Codex","GPT-5",
+  "Claude Opus 4.1","Claude Sonnet 4"
+];
+
+const FALLBACK_GO_NAMES = [
+  "Kimi K3 (2x usage)","Grok 4.5","Hy3","GLM-5.2","Kimi K2.7 Code","Qwen3.7 Plus","MiniMax-M3",
+  "Qwen3.7 Max","DeepSeek V4 Flash","DeepSeek V4 Pro","MiMo V2.5","MiMo V2.5 Pro","Kimi K2.6","GLM-5.1",
+  "Qwen3.6 Plus","MiniMax-M2.7"
+];
+
+function buildModel(display, provider) {
+  return { display, id: slugify(display), provider };
+}
+
+
+const ZEN_DISPLAY_OVERRIDES = {
+  "claude-fable-5": "Claude Fable 5","claude-opus-4-8": "Claude Opus 4.8","claude-opus-4-7": "Claude Opus 4.7",
+  "claude-opus-4-6": "Claude Opus 4.6","claude-opus-4-5": "Claude Opus 4.5","claude-opus-4-1": "Claude Opus 4.1",
+  "claude-sonnet-5": "Claude Sonnet 5","claude-sonnet-4-6": "Claude Sonnet 4.6","claude-sonnet-4-5": "Claude Sonnet 4.5",
+  "claude-sonnet-4": "Claude Sonnet 4","claude-haiku-4-5": "Claude Haiku 4.5","gemini-3.6-flash": "Gemini 3.6 Flash",
+  "gemini-3.5-flash": "Gemini 3.5 Flash","gemini-3.5-flash-lite": "Gemini 3.5 Flash Lite","gemini-3.1-pro": "Gemini 3.1 Pro",
+  "gemini-3-flash": "Gemini 3 Flash","gpt-5.6-sol": "GPT-5.6 Sol","gpt-5.6-terra": "GPT-5.6 Terra","gpt-5.6-luna": "GPT-5.6 Luna",
+  "gpt-5.5": "GPT-5.5","gpt-5.5-pro": "GPT-5.5 Pro","gpt-5.4": "GPT-5.4","gpt-5.4-pro": "GPT-5.4 Pro","gpt-5.4-mini": "GPT-5.4 Mini",
+  "gpt-5.4-nano": "GPT-5.4 Nano","gpt-5.3-codex-spark": "GPT-5.3 Codex Spark","gpt-5.3-codex": "GPT-5.3 Codex","gpt-5.2": "GPT-5.2",
+  "gpt-5.2-codex": "GPT-5.2 Codex","gpt-5.1": "GPT-5.1","gpt-5.1-codex-max": "GPT-5.1 Codex Max","gpt-5.1-codex": "GPT-5.1 Codex",
+  "gpt-5.1-codex-mini": "GPT-5.1 Codex Mini","gpt-5": "GPT-5","gpt-5-codex": "GPT-5 Codex","gpt-5-nano": "GPT-5 Nano",
+  "grok-4.5": "Grok 4.5","grok-build-0.1": "Grok Build 0.1","qwen3.7-max": "Qwen3.7 Max","qwen3.7-plus": "Qwen3.7 Plus",
+  "qwen3.6-plus": "Qwen3.6 Plus","qwen3.5-plus": "Qwen3.5 Plus","deepseek-v4-pro": "DeepSeek V4 Pro","deepseek-v4-flash": "DeepSeek V4 Flash",
+  "deepseek-v4-flash-free": "DeepSeek V4 Flash Free","minimax-m3": "MiniMax-M3","minimax-m2.7": "MiniMax-M2.7","minimax-m2.5": "MiniMax-M2.5",
+  "glm-5.2": "GLM-5.2","glm-5.1": "GLM-5.1","glm-5": "GLM-5","kimi-k2.7-code": "Kimi K2.7 Code","kimi-k2.6": "Kimi K2.6","kimi-k2.5": "Kimi K2.5",
+  "big-pickle": "Big Pickle","mimo-v2.5-free": "MiMo V2.5 Free","laguna-s-2.1-free": "Laguna S 2.1 Free","north-mini-code-free": "North Mini Code Free",
+  "nemotron-3-ultra-free": "Nemotron 3 Ultra Free","hy3-free": "Hy3 Free","ling-3.0-flash-free": "Ling-3.0-flash Free"
+};
+
+const GO_DISPLAY_OVERRIDES = {
+  "minimax-m3": "MiniMax-M3","minimax-m2.7": "MiniMax-M2.7","minimax-m2.5": "MiniMax-M2.5","kimi-k3": "Kimi K3",
+  "kimi-k2.7-code": "Kimi K2.7 Code","kimi-k2.6": "Kimi K2.6","kimi-k2.5": "Kimi K2.5","glm-5.2": "GLM-5.2","glm-5.1": "GLM-5.1",
+  "glm-5": "GLM-5","deepseek-v4-pro": "DeepSeek V4 Pro","deepseek-v4-flash": "DeepSeek V4 Flash","qwen3.7-max": "Qwen3.7 Max",
+  "qwen3.7-plus": "Qwen3.7 Plus","qwen3.6-plus": "Qwen3.6 Plus","qwen3.5-plus": "Qwen3.5 Plus","mimo-v2-pro": "MiMo V2 Pro",
+  "mimo-v2-omni": "MiMo V2 Omni","mimo-v2.5-pro": "MiMo V2.5 Pro","mimo-v2.5": "MiMo V2.5","hy3": "Hy3","hy3-preview": "Hy3 Preview","grok-4.5": "Grok 4.5"
+};
+
+const DISPLAY_ACRONYMS = { gpt: 'GPT', glm: 'GLM' };
+
+function idToDisplay(id) {
+  return id.split('-').map(part => {
+      if (DISPLAY_ACRONYMS[part]) return DISPLAY_ACRONYMS[part];
+      if (/^\d/.test(part)) return part;
+      return part.charAt(0).toUpperCase() + part.slice(1);
+    }).join(' ');
+}
+
+let ZEN_MODELS = [];
+let GO_MODELS = [];
+
+function zenModelsFallback() {
+  return FALLBACK_ZEN_NAMES.map(n => buildModel(n, 'opencode'));
+}
+
+function goModelsFallback() {
+  return FALLBACK_GO_NAMES.map(n => buildModel(n, 'opencode-go'));
+}
+
+function zenModelsFromLive(data) {
+  return data.map(m => ({
+    display: ZEN_DISPLAY_OVERRIDES[m.id] || idToDisplay(m.id),
+    id: m.id,
+    provider: 'opencode'
+  }));
+}
+
+function goModelsFromLive(data) {
+  return data.map(m => ({
+    display: GO_DISPLAY_OVERRIDES[m.id] || idToDisplay(m.id),
+    id: m.id,
+    provider: 'opencode-go'
+  }));
+}
+
+function allModels() { return [...ZEN_MODELS, ...GO_MODELS]; }
+function modelFullId(model) { return model.provider + '/' + model.id; }
+function findModel(fullId) { return allModels().find(m => modelFullId(m) === fullId); }
+
+
+async function fetchModelList(url) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+  try {
+    const res = await fetch(url, { signal: controller.signal });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    if (!json || !Array.isArray(json.data)) throw new Error('Unexpected response shape');
+    return json.data;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function setCatalogNotice(text, isWarning) {
+  const el = document.getElementById('catalogNotice');
+  if (!el) return;
+  el.textContent = text;
+  el.style.color = isWarning ? 'var(--danger)' : '';
+}
+
+async function loadLiveModelCatalog() {
+  const [zenResult, goResult] = await Promise.allSettled([
+    fetchModelList('/api/models/zen'),
+    fetchModelList('/api/models/go')
+  ]);
+
+  const zenOk = zenResult.status === 'fulfilled';
+  const goOk = goResult.status === 'fulfilled';
+
+  ZEN_MODELS = zenOk ? zenModelsFromLive(zenResult.value) : zenModelsFallback();
+  GO_MODELS = goOk ? goModelsFromLive(goResult.value) : goModelsFallback();
+
+  if (zenOk && goOk) {
+    setCatalogNotice('Live model catalog from opencode.ai (Zen: ' + (ZEN_MODELS.length - 1) + ', Go: ' + GO_MODELS.length + ')', false);
+  } else if (!zenOk && !goOk) {
+    setCatalogNotice('Live catalog unreachable - using cached fallback model list', true);
+  } else {
+    setCatalogNotice('Partial live catalog - ' + (zenOk ? 'Go' : 'Zen') + ' fetch failed, using its cached fallback list', true);
+  }
+
+  render();
+}
+
+let roles = [];
+let defaultRoleIndex = -1;
+
+const VALID_ROLE_RE = /^[a-zA-Z_][a-zA-Z0-9_.\-\/]*$/;
+function isValidRoleName(name) { return VALID_ROLE_RE.test(name) && name.length > 0; }
+
+function render() { renderRoles(); renderPreview(); updateStats(); }
+
+
+function createModelDropdownHTML(roleIdx, currentVal) {
+  const zenOpts = ZEN_MODELS.map(m => {
+    const fid = modelFullId(m);
+    const sel = fid === currentVal ? ' style="background:var(--accent);color:#fff"' : '';
+    return `<div class="option" data-fid="${escAttr(fid)}"${sel}><span class="tag tag-zen">ZEN</span>${escHtml(m.display)}</div>`;
+  }).join('');
+  const goOpts = GO_MODELS.map(m => {
+    const fid = modelFullId(m);
+    const sel = fid === currentVal ? ' style="background:var(--accent);color:#fff"' : '';
+    return `<div class="option" data-fid="${escAttr(fid)}"${sel}><span class="tag tag-go">GO</span>${escHtml(m.display)}</div>`;
+  }).join('');
+  return `
+    <div class="group-label">OpenCode Zen</div>
+    ${zenOpts}
+    <div class="group-label">OpenCode Go</div>
+    ${goOpts}
+  `;
+}
+
+function renderTaskPermSection(i) {
+  const role = roles[i];
+  const others = roles.filter((r, idx) => idx !== i && r.name && isValidRoleName(r.name));
+  const defaultVal = role.permTaskDefault || '';
+  const rows = others.map(r => {
+    const val = (role.permTask && role.permTask[r.name]) || '';
+    return `
+      <div class="perm-task-row">
+        <span class="perm-task-name">${escHtml(r.name)}</span>
+        <select data-role="${escAttr(r.name)}" onchange="updateRoleTaskPerm(${i}, this.dataset.role, this.value)">
+          <option value="" ${val === '' ? 'selected' : ''}>(unset)</option>
+          <option value="allow" ${val === 'allow' ? 'selected' : ''}>allow</option>
+          <option value="deny" ${val === 'deny' ? 'selected' : ''}>deny</option>
+        </select>
+      </div>`;
+  }).join('');
+  return `
+    <div class="perm-section">
+      <label>Task delegation</label>
+      <div class="perm-task-row">
+        <span class="perm-task-name">* (default)</span>
+        <select onchange="updateRoleTaskDefault(${i}, this.value)">
+          <option value="" ${defaultVal === '' ? 'selected' : ''}>(unset)</option>
+          <option value="allow" ${defaultVal === 'allow' ? 'selected' : ''}>allow</option>
+          <option value="deny" ${defaultVal === 'deny' ? 'selected' : ''}>deny</option>
+        </select>
+      </div>
+      ${rows || '<div class="perm-empty">No other named roles yet.</div>'}
+    </div>`;
+}
+
+function renderBashPermSection(i) {
+  const role = roles[i];
+  const rows = (role.permBash || []).map((row, ri) => `
+    <div class="perm-bash-row">
+      <input type="text" value="${escAttr(row.pattern)}" placeholder="e.g. git commit* or *"
+             oninput="updateBashPattern(${i}, ${ri}, this.value)">
+      <select onchange="updateBashLevel(${i}, ${ri}, this.value)">
+        <option value="allow" ${row.level === 'allow' ? 'selected' : ''}>allow</option>
+        <option value="ask" ${row.level === 'ask' ? 'selected' : ''}>ask</option>
+        <option value="deny" ${row.level === 'deny' ? 'selected' : ''}>deny</option>
+      </select>
+      <button class="btn btn-danger btn-sm" onclick="removeBashPattern(${i}, ${ri})" title="Remove pattern">&times;</button>
+    </div>`).join('');
+  return `
+    <div class="perm-section">
+      <label>Bash patterns</label>
+      ${rows || '<div class="perm-empty">No patterns yet.</div>'}
+      <button class="btn btn-sm" onclick="addBashPattern(${i})">+ Add pattern</button>
+    </div>`;
+}
+
+function renderRoles() {
+  const list = document.getElementById('roleList');
+  const frag = document.createDocumentFragment();
+
+  roles.forEach((role, i) => {
+    const card = document.createElement('div');
+    card.className = 'role-card' + (i === defaultRoleIndex ? ' default' : '');
+    const nameInvalid = role.name.length > 0 && !isValidRoleName(role.name);
+
+    card.innerHTML = `
+      <div class="role-header">
+        <input type="text" value="${escAttr(role.name)}" placeholder="Role name (e.g. plan, edit, test)"
+               oninput="updateRoleName(${i}, this.value)" class="${nameInvalid ? 'invalid' : ''}">
+        <label class="radio-label" title="Set as default primary agent">
+          <input type="radio" name="defaultRole" ${i === defaultRoleIndex ? 'checked' : ''}
+                 onchange="setDefaultRole(${i})">
+          default
+        </label>
+        <button class="btn btn-danger btn-sm" onclick="removeRole(${i})" title="Remove role">&times;</button>
+      </div>
+      ${nameInvalid ? '<div class="inline-warn">Invalid JSON key &mdash; use letters, digits, hyphens, underscores, dots, slashes</div>' : ''}
+      <div class="role-row">
+        <label>Description</label>
+        <input type="text" value="${escAttr(role.desc)}" placeholder="Optional" style="flex:1;min-width:140px;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:5px 10px;border-radius:var(--radius);font-size:12px;"
+               oninput="updateRoleDesc(${i}, this.value)">
+      </div>
+      <div class="role-row">
+        <label>Mode</label>
+        <select onchange="updateRoleMode(${i}, this.value)" style="width:100px">
+          <option value="primary" ${role.mode === 'primary' ? 'selected' : ''}>primary</option>
+          <option value="subagent" ${role.mode === 'subagent' ? 'selected' : ''}>subagent</option>
+        </select>
+        <label>Model</label>
+        <div class="model-search-wrap" id="modelSearchWrap${i}">
+          <input type="text" value="${escAttr(role.modelDisplay || '')}" placeholder="Search model..."
+                 autocomplete="off"
+                 onfocus="openModelDropdown(${i})"
+                 onblur="setTimeout(() => closeModelDropdown(${i}), 200)"
+                 oninput="filterModelDropdown(${i}, this.value)">
+          <div class="model-dropdown" id="modelDropdown${i}">
+            ${createModelDropdownHTML(i, role.model)}
+          </div>
+        </div>
+      </div>
+      <div class="role-row">
+        <label>Temp</label>
+        <input type="range" min="0" max="1" step="0.05" value="${role.temperature}"
+               oninput="updateRoleTemp(${i}, parseFloat(this.value), this)"
+               style="flex:1;max-width:160px">
+        <span class="temp-val">${role.temperature.toFixed(2)}</span>
+      </div>
+      <div class="role-row">
+        <button class="btn btn-sm" id="permToggle${i}" onclick="togglePermissions(${i})">${role.permOpen ? '− Permissions' : '+ Permissions'}</button>
+      </div>
+      <div class="perm-body" id="permBody${i}" style="display:${role.permOpen ? 'flex' : 'none'}">
+        <div class="perm-section">
+          <label>Prompt</label>
+          <textarea placeholder="System prompt for this role (optional)"
+                    oninput="updateRolePrompt(${i}, this.value)">${escHtml(role.prompt)}</textarea>
+        </div>
+        <div class="perm-section">
+          <label>Edit permission</label>
+          <select onchange="updateRoleEditPerm(${i}, this.value)">
+            <option value="" ${role.permEdit === '' ? 'selected' : ''}>(unset)</option>
+            <option value="allow" ${role.permEdit === 'allow' ? 'selected' : ''}>allow</option>
+            <option value="ask" ${role.permEdit === 'ask' ? 'selected' : ''}>ask</option>
+            <option value="deny" ${role.permEdit === 'deny' ? 'selected' : ''}>deny</option>
+          </select>
+        </div>
+        ${role.mode === 'primary' ? renderTaskPermSection(i) : ''}
+        ${renderBashPermSection(i)}
+      </div>
+    `;
+    frag.appendChild(card);
+  });
+
+  list.innerHTML = '';
+  list.appendChild(frag);
+
+  roles.forEach((_, i) => {
+    const dd = document.getElementById('modelDropdown' + i);
+    if (dd) {
+      dd.querySelectorAll('.option').forEach(opt => {
+        opt.onmousedown = function(e) {
+          e.preventDefault();
+          const fid = this.getAttribute('data-fid');
+          selectModel(i, fid);
+          closeModelDropdown(i);
+        };
+      });
+    }
+  });
+}
+
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escAttr(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function renderPreview() {
+  const json = generateJSON();
+  const el = document.getElementById('jsonPreview');
+  if (json.error) {
+    el.textContent = '// ' + json.error;
+    el.style.color = 'var(--danger)';
+  } else {
+    el.textContent = json.text;
+    el.style.color = 'var(--text)';
+  }
+}
+
+function updateStats() {
+  document.getElementById('roleCount').textContent = roles.length;
+  const json = generateJSON();
+  const text = json.text || '';
+  document.getElementById('previewStats').textContent = text.length + ' chars, ' + text.split('\n').length + ' lines';
+}
+
+
+function createBlankRole() {
+  return {
+    name: '', desc: '', mode: 'primary', model: '', modelDisplay: '', temperature: 0.3,
+    prompt: '', permOpen: false, permEdit: '', permTaskDefault: '', permTask: {}, permBash: []
+  };
+}
+
+function addRole() {
+  roles.push(createBlankRole());
+  if (defaultRoleIndex === -1) defaultRoleIndex = 0;
+  render();
+}
+
+function removeRole(i) {
+  roles.splice(i, 1);
+  if (i === defaultRoleIndex) {
+    defaultRoleIndex = roles.length > 0 ? 0 : -1;
+  } else if (i < defaultRoleIndex) {
+    defaultRoleIndex--;
+  }
+  render();
+}
+
+function updateRoleName(i, val) {
+  const oldName = roles[i].name;
+  roles[i].name = val;
+  if (oldName && oldName !== val) {
+    roles.forEach((r, idx) => {
+      if (idx !== i && r.permTask && Object.prototype.hasOwnProperty.call(r.permTask, oldName)) {
+        r.permTask[val] = r.permTask[oldName];
+        delete r.permTask[oldName];
+      }
+    });
+  }
+  const active = document.activeElement;
+  const cursorPos = (active && active.tagName === 'INPUT' && typeof active.selectionStart === 'number') ? active.selectionStart : null;
+  render();
+  const newInput = document.querySelectorAll('#roleList .role-header input[type="text"]')[i];
+  if (newInput) {
+    newInput.focus();
+    if (cursorPos !== null) {
+      const pos = Math.min(cursorPos, newInput.value.length);
+      newInput.setSelectionRange(pos, pos);
+    }
+  }
+}
+
+function updateRoleDesc(i, val) { roles[i].desc = val; renderPreview(); updateStats(); }
+function updateRoleMode(i, val) { roles[i].mode = val; render(); }
+function updateRolePrompt(i, val) { roles[i].prompt = val; renderPreview(); updateStats(); }
+function updateRoleEditPerm(i, val) { roles[i].permEdit = val; renderPreview(); updateStats(); }
+function updateRoleTaskDefault(i, val) { roles[i].permTaskDefault = val; renderPreview(); updateStats(); }
+function updateRoleTaskPerm(i, roleName, val) {
+  if (!roles[i].permTask) roles[i].permTask = {};
+  if (val) roles[i].permTask[roleName] = val;
+  else delete roles[i].permTask[roleName];
+  renderPreview();
+  updateStats();
+}
+function updateBashPattern(i, ri, val) { roles[i].permBash[ri].pattern = val; renderPreview(); updateStats(); }
+function updateBashLevel(i, ri, val) { roles[i].permBash[ri].level = val; renderPreview(); updateStats(); }
+function addBashPattern(i) {
+  if (!roles[i].permBash) roles[i].permBash = [];
+  roles[i].permBash.push({ pattern: '', level: 'ask' });
+  render();
+}
+function removeBashPattern(i, ri) { roles[i].permBash.splice(ri, 1); render(); }
+function togglePermissions(i) {
+  roles[i].permOpen = !roles[i].permOpen;
+  const body = document.getElementById('permBody' + i);
+  const btn = document.getElementById('permToggle' + i);
+  if (body) body.style.display = roles[i].permOpen ? 'flex' : 'none';
+  if (btn) btn.textContent = roles[i].permOpen ? '− Permissions' : '+ Permissions';
+}
+function updateRoleTemp(i, val, el) {
+  roles[i].temperature = val;
+  if (el) {
+    const valEl = el.nextElementSibling;
+    if (valEl) valEl.textContent = val.toFixed(2);
+  }
+  renderPreview();
+  updateStats();
+}
+function setDefaultRole(i) { defaultRoleIndex = i; render(); }
+
+function selectModel(i, fullId) {
+  const model = findModel(fullId);
+  if (model) {
+    roles[i].model = fullId;
+    roles[i].modelDisplay = model.display;
+  }
+  render();
+}
+
+let openDropdownIdx = -1;
+
+function openModelDropdown(i) {
+  openDropdownIdx = i;
+  const dd = document.getElementById('modelDropdown' + i);
+  if (dd) {
+    dd.classList.add('open');
+    dd.querySelectorAll('.option').forEach(o => o.style.display = '');
+    dd.querySelectorAll('.group-label').forEach(o => o.style.display = '');
+    const selected = dd.querySelector('.option[style*="var(--accent)"]');
+    if (selected) selected.scrollIntoView({ block: 'nearest' });
+  }
+}
+
+function closeModelDropdown(i) {
+  setTimeout(() => {
+    if (openDropdownIdx === i) {
+      const dd = document.getElementById('modelDropdown' + i);
+      if (dd) dd.classList.remove('open');
+      openDropdownIdx = -1;
+    }
+  }, 150);
+}
+
+
+function filterModelDropdown(i, query) {
+  const dd = document.getElementById('modelDropdown' + i);
+  if (!dd) return;
+  const q = query.toLowerCase().trim();
+  let visibleInGroup = { zen: false, go: false };
+  let currentGroup = null;
+
+  dd.querySelectorAll('.option, .group-label').forEach(el => {
+    if (el.classList.contains('group-label')) {
+      const text = el.textContent.trim();
+      if (text === 'OpenCode Zen') currentGroup = 'zen';
+      else if (text === 'OpenCode Go') currentGroup = 'go';
+    } else {
+      const fid = el.getAttribute('data-fid') || '';
+      const display = el.textContent.replace(/^(ZEN|GO)/, '').toLowerCase();
+      const match = !q || fid.toLowerCase().includes(q) || display.includes(q);
+      el.style.display = match ? '' : 'none';
+      if (match && currentGroup) visibleInGroup[currentGroup] = true;
+    }
+  });
+
+  dd.querySelectorAll('.group-label').forEach(el => {
+    const text = el.textContent.trim();
+    let group;
+    if (text === 'OpenCode Zen') group = 'zen';
+    else if (text === 'OpenCode Go') group = 'go';
+    el.style.display = (group && visibleInGroup[group]) ? '' : 'none';
+  });
+}
+
+function buildPermission(role) {
+  const permission = {};
+  if (role.permEdit) permission.edit = role.permEdit;
+
+  if (role.mode === 'primary') {
+    const task = {};
+    if (role.permTaskDefault) task['*'] = role.permTaskDefault;
+    for (const [name, level] of Object.entries(role.permTask || {})) {
+      if (level) task[name] = level;
+    }
+    if (Object.keys(task).length) permission.task = task;
+  }
+
+  const bash = {};
+  for (const row of (role.permBash || [])) {
+    const pattern = (row.pattern || '').trim();
+    if (pattern && row.level) bash[pattern] = row.level;
+  }
+  if (Object.keys(bash).length) permission.bash = bash;
+
+  return Object.keys(permission).length ? permission : null;
+}
+
+function generateJSON() {
+  for (let i = 0; i < roles.length; i++) {
+    if (!roles[i].name) return { error: 'Role ' + (i + 1) + ' has no name.' };
+    if (!isValidRoleName(roles[i].name)) {
+      return { error: 'Role "' + roles[i].name + '" has an invalid name. Use letters, digits, hyphens, underscores, dots, slashes.' };
+    }
+  }
+
+  const agent = {};
+  for (const role of roles) {
+    const entry = {};
+    if (role.desc.trim()) entry.description = role.desc.trim();
+    entry.mode = role.mode;
+    entry.model = role.model || '(no model selected)';
+    if (role.temperature !== 0.3) entry.temperature = role.temperature;
+    if (role.prompt && role.prompt.trim()) entry.prompt = role.prompt.trim();
+    const permission = buildPermission(role);
+    if (permission) entry.permission = permission;
+    agent[role.name] = entry;
+  }
+
+  const defaultModel = (defaultRoleIndex >= 0 && defaultRoleIndex < roles.length)
+    ? roles[defaultRoleIndex].model || '(no model selected)'
+    : '(no default)';
+
+  const obj = { "$schema": "https://opencode.ai/config.json", "model": defaultModel, "agent": agent };
+  const text = JSON.stringify(obj, null, 2);
+  return { text, obj };
+}
+
+async function copyJSON() {
+  const json = generateJSON();
+  if (json.error) return;
+  try {
+    await navigator.clipboard.writeText(json.text);
+    const btn = document.querySelector('.btn-accent');
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    btn.style.background = 'var(--success)';
+    btn.style.borderColor = 'var(--success)';
+    setTimeout(() => {
+      btn.textContent = orig;
+      btn.style.background = '';
+      btn.style.borderColor = '';
+    }, 1500);
+  } catch {
+    alert('Failed to copy. Please select and copy manually.');
+  }
+}
+
+ZEN_MODELS = zenModelsFallback();
+GO_MODELS = goModelsFallback();
+
+addRole();
+render();
+
+loadLiveModelCatalog();
+</script>
+
+</body>
+</html>
