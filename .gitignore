@@ -4,8 +4,9 @@ dist/
 *.log
 .DS_Store
 tmp/
+docs/
 
-# personal agent-workflow config - local only, not for public repos (see ohnoai/squelch)
+# dev config - disregard
 .claude/
 .opencode/
 .veans.yml

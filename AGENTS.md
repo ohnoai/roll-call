@@ -37,6 +37,4 @@ enough that the fallbacks go stale, both files need the edit, not just one.
 
 This repo is small enough that a commit message is the record. If a change needs more
 explanation than that, put it in the commit body rather than inventing a new document
-type. Dated decision records go in `docs/decisions/` (see `docs/decisions/README.md`)
-when the reasoning would otherwise only live in someone's head - most changes don't
-need one.
+type.

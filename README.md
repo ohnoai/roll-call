@@ -23,7 +23,6 @@ agent.md            # machine-facing spec
 api/models/zen.js   # CORS proxy for OpenCode Zen catalog
 api/models/go.js    # CORS proxy for OpenCode Go catalog
 vercel.json         # optional Vercel deploy for UI + proxies
-docs/decisions/     # dated decision records, empty until something needs one
 ```
 
 ## Quick use
