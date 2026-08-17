@@ -59,9 +59,9 @@ npx --yes serve .
 - The site still ships the tool under `/tools/roll-call/` with the same personality.
 - Site chrome (home / brain spam / tools) links from this isolated copy point at **absolute** `https://ohnoai.xyz/...` URLs so the branding still works off-site.
 
-### Spectrum (paid zip · coming soon)
+### Spectrum (paid zip · link pending)
 
-[![SPECTRUM COMING SOON](assets/roll-call-spectrum.webp)](https://ohnoai.xyz/spectrum/)
+[![Roll Call Spectrum — Clean + Unhinged, one zip](assets/roll-call-spectrum.webp)](https://ohnoai.xyz/spectrum/)
 
 ## License
 
