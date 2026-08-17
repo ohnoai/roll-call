@@ -751,8 +751,8 @@ function renderRoles() {
   });
 }
 
-function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function escAttr(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function escAttr(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;'); }
 
 function renderPreview() {
   const json = generateJSON();
@@ -952,6 +952,9 @@ function generateJSON() {
     if (!isValidRoleName(roles[i].name)) {
       return { error: 'Role "' + roles[i].name + '" has an invalid name. Use letters, digits, hyphens, underscores, dots, slashes.' };
     }
+    if (!roles[i].model) {
+      return { error: 'Role "' + roles[i].name + '" has no model selected.' };
+    }
   }
 
   const agent = {};
@@ -959,7 +962,7 @@ function generateJSON() {
     const entry = {};
     if (role.desc.trim()) entry.description = role.desc.trim();
     entry.mode = role.mode;
-    entry.model = role.model || '(no model selected)';
+    entry.model = role.model;
     if (role.temperature !== 0.3) entry.temperature = role.temperature;
     if (role.prompt && role.prompt.trim()) entry.prompt = role.prompt.trim();
     const permission = buildPermission(role);
@@ -968,7 +971,7 @@ function generateJSON() {
   }
 
   const defaultModel = (defaultRoleIndex >= 0 && defaultRoleIndex < roles.length)
-    ? roles[defaultRoleIndex].model || '(no model selected)'
+    ? roles[defaultRoleIndex].model
     : '(no default)';
 
   const obj = { "$schema": "https://opencode.ai/config.json", "model": defaultModel, "agent": agent };
