@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Roll Call — ohnoai.xyz</title>
+<title>Roll Call - ohnoai.xyz</title>
 <meta name="description" content="Assign OpenCode Zen/Go models to agent roles and generate the opencode.json block. First public tool. Filed under Form 7-B.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
 <style>
@@ -417,7 +417,7 @@ select:focus, input[type="range"]:focus { outline: none; border-color: var(--acc
     <span id="roleCount">0</span> role(s) · Form 7-B compliant (allegedly) ·
     <a href="https://ohnoai.xyz/tools/" style="color: inherit;">all tools</a> ·
     <a href="agent.md" style="color: inherit;">machine edition</a> ·
-    co-morbid with <a href="https://ohnoai.dev" rel="noopener noreferrer" style="color: inherit;">ohnoai.dev</a>
+    part of the <a href="https://ohnoai.net" rel="noopener noreferrer" style="color: inherit;">ohnoai</a> constellation.
     · <a href="https://ohnoai.xyz/spectrum/roll-call/" style="color: inherit;" title="optional support">Spectrum</a> · free site stays free forever
   </span>
 </footer>
@@ -434,10 +434,10 @@ function slugify(name) {
 }
 
 
-// Fallback list only — used when the live fetch fails for a given provider.
+// Fallback list only - used when the live fetch fails for a given provider.
 // Real catalogs come from opencode.ai's own APIs, via same-origin proxy
 // functions (opencode.ai doesn't send CORS headers, so the browser can't
-// fetch these directly — see api/models/zen.js and api/models/go.js):
+// fetch these directly - see api/models/zen.js and api/models/go.js):
 //   Zen: /api/models/zen  ->  https://opencode.ai/zen/v1/models
 //   Go:  /api/models/go   ->  https://opencode.ai/zen/go/v1/models
 const FALLBACK_ZEN_NAMES = [
@@ -556,8 +556,8 @@ function setCatalogNotice(text, isWarning) {
 
 async function loadLiveModelCatalog() {
   const [zenResult, goResult] = await Promise.allSettled([
-    fetchModelList('/api/models/zen'),
-    fetchModelList('/api/models/go')
+    fetchModelList('https://ohnoai.xyz/api/models/zen'),
+    fetchModelList('https://ohnoai.xyz/api/models/go')
   ]);
 
   const zenOk = zenResult.status === 'fulfilled';
@@ -569,9 +569,9 @@ async function loadLiveModelCatalog() {
   if (zenOk && goOk) {
     setCatalogNotice('Live model catalog from opencode.ai (Zen: ' + (ZEN_MODELS.length - 1) + ', Go: ' + GO_MODELS.length + ')', false);
   } else if (!zenOk && !goOk) {
-    setCatalogNotice('Live catalog unreachable — using cached fallback model list', true);
+    setCatalogNotice('Live catalog unreachable - using cached fallback model list', true);
   } else {
-    setCatalogNotice('Partial live catalog — ' + (zenOk ? 'Go' : 'Zen') + ' fetch failed, using its cached fallback list', true);
+    setCatalogNotice('Partial live catalog - ' + (zenOk ? 'Go' : 'Zen') + ' fetch failed, using its cached fallback list', true);
   }
 
   render();
