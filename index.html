@@ -417,8 +417,8 @@ select:focus, input[type="range"]:focus { outline: none; border-color: var(--acc
     <span id="roleCount">0</span> role(s) · Form 7-B compliant (allegedly) ·
     <a href="https://ohnoai.xyz/tools/" style="color: inherit;">all tools</a> ·
     <a href="agent.md" style="color: inherit;">machine edition</a> ·
-    co-morbid with <a href="https://ohnoai.dev" rel="noopener noreferrer" style="color: inherit;">ohnoai.dev</a>
-    · <a href="https://ohnoai.xyz/spectrum/" style="color: inherit;" title="Clean + Unhinged zip">Spectrum</a>: pay the boring tax · free build stays whole, forever
+    part of the <a href="https://ohnoai.net" rel="noopener noreferrer" style="color: inherit;">ohnoai</a> constellation.
+    · <a href="https://ohnoai.xyz/spectrum/roll-call/" style="color: inherit;" title="optional support">Spectrum</a> · free site stays free forever
   </span>
 </footer>
 
@@ -556,8 +556,8 @@ function setCatalogNotice(text, isWarning) {
 
 async function loadLiveModelCatalog() {
   const [zenResult, goResult] = await Promise.allSettled([
-    fetchModelList('/api/models/zen'),
-    fetchModelList('/api/models/go')
+    fetchModelList('https://ohnoai.xyz/api/models/zen'),
+    fetchModelList('https://ohnoai.xyz/api/models/go')
   ]);
 
   const zenOk = zenResult.status === 'fulfilled';
