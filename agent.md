@@ -107,7 +107,7 @@ Same shape as the output, minus the `$schema` wrapper - just `default` and `agen
 
 ## One deliberate difference from the web tool
 
-The web form silently omits a role's `temperature` from the JSON when it's left at the slider's default (0.3) - a UI convenience, not something opencode itself treats as special. The CLI does not do this: if you set `"temperature": 0.3`, it stays in the output. Omit the key entirely if you want opencode's own default to apply.
+The web form quietly omits a role's `temperature` from the JSON when it's left at the slider's default (0.3) - a UI convenience, not something opencode itself treats as special. The CLI does not do this: if you set `"temperature": 0.3`, it stays in the output. Omit the key entirely if you want opencode's own default to apply.
 
 ## Not covered here
 

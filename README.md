@@ -63,7 +63,7 @@ npx --yes serve .
 [![Spectrum: backed, not billed](assets/spectrum-mark-light.png#gh-dark-mode-only)](https://ohnoai.xyz/spectrum/)
 [![Spectrum: backed, not billed](assets/spectrum-mark-dark.png#gh-light-mode-only)](https://ohnoai.xyz/spectrum/)
 
-[![Roll Call Spectrum — Clean + Unhinged, one zip](assets/roll-call-spectrum.webp)](https://ohnoai.xyz/spectrum/)
+[![Roll Call Spectrum: Clean + Unhinged, one zip](assets/roll-call-spectrum.webp)](https://ohnoai.xyz/spectrum/)
 
 ## License
 
